@@ -1,0 +1,122 @@
+import math
+
+board = [' ' for _ in range(9)]
+
+def display_board():
+    print("\n")
+    for row in range(3):
+        print(" " + " | ".join(board[row * 3:(row + 1) * 3]))
+        if row < 2:
+            print("---+---+---")
+    print("\n")
+
+def is_winner(brd, player):
+    winning_positions = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 8], [2, 4, 6]
+    ]
+    for combo in winning_positions:
+        if all(brd[i] == player for i in combo):
+            return True
+    return False
+
+def is_board_full(brd):
+    return all(cell != ' ' for cell in brd)
+
+def available_moves(brd):
+    return [i for i, value in enumerate(brd) if value == ' ']
+
+def minimax(brd, is_maximizing, alpha=-math.inf, beta=math.inf):
+    if is_winner(brd, 'O'):
+        return 1
+    if is_winner(brd, 'X'):
+        return -1
+    if is_board_full(brd):
+        return 0
+
+    if is_maximizing:
+        max_eval = -math.inf
+        for move in available_moves(brd):
+            brd[move] = 'O'
+            score = minimax(brd, False, alpha, beta)
+            brd[move] = ' '
+            max_eval = max(max_eval, score)
+            alpha = max(alpha, score)
+            if beta <= alpha:
+                break
+        return max_eval
+    else:
+        min_eval = math.inf
+        for move in available_moves(brd):
+            brd[move] = 'X'
+            score = minimax(brd, True, alpha, beta)
+            brd[move] = ' '
+            min_eval = min(min_eval, score)
+            beta = min(beta, score)
+            if beta <= alpha:
+                break
+        return min_eval
+
+def make_ai_move():
+    best_score = -math.inf
+    best_move = None
+
+    for move in available_moves(board):
+        board[move] = 'O'
+        score = minimax(board, False)
+        board[move] = ' '
+        if score > best_score:
+            best_score = score
+            best_move = move
+
+    board[best_move] = 'O'
+    print("🤖 AI chose position:", best_move)
+
+def make_player_move():
+    while True:
+        try:
+            move = int(input("🧍 Enter your move (0-8): "))
+            if move < 0 or move > 8:
+                print("⚠️ Please enter a number between 0 and 8.")
+            elif board[move] != ' ':
+                print("⚠️ That spot is already taken.")
+            else:
+                board[move] = 'X'
+                break
+        except ValueError:
+            print("⚠️ Invalid input. Please enter a number.")
+
+def print_instructions():
+    print("🧠 Tic-Tac-Toe: You (X) vs AI (O)")
+    print("Board positions:")
+    print(" 0 | 1 | 2\n-----------\n 3 | 4 | 5\n-----------\n 6 | 7 | 8")
+
+def game_loop():
+    print_instructions()
+    display_board()
+
+    while True:
+        make_player_move()
+        display_board()
+
+        if is_winner(board, 'X'):
+            print("🎉 Congratulations! You win!")
+            break
+        if is_board_full(board):
+            print("🤝 It's a draw!")
+            break
+
+        print("AI is thinking...")
+        make_ai_move()
+        display_board()
+
+        if is_winner(board, 'O'):
+            print("💻 AI wins! Better luck next time.")
+            break
+        if is_board_full(board):
+            print("🤝 It's a draw!")
+            break
+
+if __name__ == "__main__":
+    game_loop()

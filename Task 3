@@ -1,0 +1,109 @@
+import React, { useState, useEffect } from 'react';
+
+// Main App component for the recommendation system
+const App = () => {
+  // Define a list of sample movies with their genres
+  const movies = [
+    { id: 1, title: 'The Shawshank Redemption', genres: ['Drama', 'Crime'] },
+    { id: 2, title: 'The Dark Knight', genres: ['Action', 'Crime', 'Drama'] },
+    { id: 3, title: 'Pulp Fiction', genres: ['Crime', 'Drama'] },
+    { id: 4, title: 'Forrest Gump', genres: ['Drama', 'Romance'] },
+    { id: 5, title: 'The Matrix', genres: ['Action', 'Sci-Fi'] },
+    { id: 6, title: 'Interstellar', genres: ['Sci-Fi', 'Drama'] },
+    { id: 7, title: 'Inception', genres: ['Action', 'Sci-Fi', 'Thriller'] },
+    { id: 8, title: 'Spirited Away', genres: ['Animation', 'Adventure', 'Fantasy'] },
+    { id: 9, title: 'The Lion King', genres: ['Animation', 'Adventure', 'Family'] },
+    { id: 10, title: 'La La Land', genres: ['Musical', 'Romance', 'Drama'] },
+    { id: 11, title: 'Titanic', genres: ['Romance', 'Drama'] },
+    { id: 12, title: 'Avengers: Endgame', genres: ['Action', 'Sci-Fi'] },
+  ];
+
+  // Extract all unique genres from the movie list
+  const allGenres = [...new Set(movies.flatMap(movie => movie.genres))];
+
+  // State to manage the user's selected genres
+  const [selectedGenres, setSelectedGenres] = useState([]);
+  // State to store the recommended movies
+  const [recommendedMovies, setRecommendedMovies] = useState([]);
+
+  // useEffect hook to update recommendations whenever selectedGenres change
+  useEffect(() => {
+    // If no genres are selected, clear recommendations
+    if (selectedGenres.length === 0) {
+      setRecommendedMovies([]);
+      return;
+    }
+
+    // Filter movies where at least one of their genres matches the selected genres
+    const filteredMovies = movies.filter(movie =>
+      movie.genres.some(genre => selectedGenres.includes(genre))
+    );
+
+    // Sort recommended movies by title for consistent display
+    setRecommendedMovies(filteredMovies.sort((a, b) => a.title.localeCompare(b.title)));
+  }, [selectedGenres]); // Dependency array: re-run effect when selectedGenres changes
+
+  // Handler for genre checkbox changes
+  const handleGenreChange = (genre) => {
+    setSelectedGenres(prevSelectedGenres => {
+      if (prevSelectedGenres.includes(genre)) {
+        // If genre is already selected, remove it
+        return prevSelectedGenres.filter(g => g !== genre);
+      } else {
+        // If genre is not selected, add it
+        return [...prevSelectedGenres, genre];
+      }
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4 font-sans">
+      <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-4xl">
+        <h1 className="text-3xl font-bold text-center text-gray-800 mb-6 rounded-md p-2 bg-blue-100">
+          🎬 Movie Recommendation System
+        </h1>
+
+        {/* Genre Selection Section */}
+        <div className="mb-8 p-4 bg-purple-50 rounded-lg shadow-inner">
+          <h2 className="text-xl font-semibold text-gray-700 mb-4">Select Your Preferred Genres:</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            {allGenres.map(genre => (
+              <label key={genre} className="flex items-center space-x-2 cursor-pointer bg-purple-100 px-4 py-2 rounded-full hover:bg-purple-200 transition-colors duration-200 shadow-sm">
+                <input
+                  type="checkbox"
+                  checked={selectedGenres.includes(genre)}
+                  onChange={() => handleGenreChange(genre)}
+                  className="form-checkbox h-5 w-5 text-purple-600 rounded-md focus:ring-purple-500"
+                />
+                <span className="text-gray-800 font-medium">{genre}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Recommended Movies Section */}
+        <div className="p-4 bg-green-50 rounded-lg shadow-inner">
+          <h2 className="text-xl font-semibold text-gray-700 mb-4">Recommended Movies:</h2>
+          {recommendedMovies.length > 0 ? (
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {recommendedMovies.map(movie => (
+                <li key={movie.id} className="bg-green-100 p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
+                  <h3 className="text-lg font-bold text-green-800">{movie.title}</h3>
+                  <p className="text-sm text-gray-600">
+                    Genres: <span className="font-medium">{movie.genres.join(', ')}</span>
+                  </p>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-gray-500 text-center py-4">
+              Please select some genres to see recommendations.
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default App;
